@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+    <title>Demo</title>
+    <script src="./lib/howler.core.min.js"></script>
+    <script type="text/javascript">
+
+            //Create a play group
+            var playGroup = function (list){
+                this.list = list
+                this.index = 0
+                this.listLen = list.length
+            }
+	    var Controller;
+            playGroup.prototype = {
+                play:function(prevIndex){
+                    var self = this
+                    Controller = this.list[this.index]
+                    //Stop playing the prev song
+                    if(prevIndex != undefined){
+                        var prevController = this.list[prevIndex]
+                        if(prevController.howl){
+                            //Remove event listener that you've set.
+                            prevController.howl.off('end')
+                            prevController.howl.stop()
+                        }
+                    }
+
+                    //Determines whether the object is created
+                    if(!Controller.howl){
+                        //Creating Howl objects
+                        Controller.howl = new Howl({
+                            src:Controller.src,
+                            //Set to true to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
+                            html5:true,
+                            //Automatically begin downloading the audio file when the Howl is defined.
+                            preload:true
+                        })
+
+                    }
+
+                    Controller.howl.play()
+                    //Add a callback event,Used to play the next music automatically
+                    Controller.howl.on('end',function(){
+                        self.next()
+                    })
+                    
+                },
+                statu:function(){
+                    var Controller = this.list[this.index]
+                    if(!Controller.howl){
+                        this.play()
+                    }else{
+                        //Determine music playback statu
+                        if(Controller.howl.playing()){
+                            //Pause music
+                            Controller.howl.pause()
+                        }else{
+                            this.play()
+                        }
+                    }
+                },
+                next:function(){
+                    var prevIndex = this.index
+                    //Index add one
+                    if(++ this.index >= this.listLen){
+                        this.index = 0
+                    }
+                    //prevIndex -> this.play() Music used to stop the current play
+                    this.play(prevIndex)
+                },
+                prev:function(){
+                    var prevIndex = this.index
+                    if(-- this.index < 0){
+                        this.index = this.listLen - 1
+                    }
+                    this.play(prevIndex)
+                },
+		stop:function(){
+                    //var prevIndex = this.index
+                    //if(-- this.index < 0){
+                    //    this.index = this.listLen - 1
+                    //}
+		   //var Controller = this.list[this.index]
+		    Controller.howl.stop()
+                    //this.stop()
+                }
+            }
+
+
+            // Creates an object that is passed in to a music file
+            var player = new playGroup([
+                {
+                    src:'1.mp3',
+                },
+                {
+                    src:'3.mp3',
+                },
+            ])
+
+            //  play frist music
+            player.play()
+
+
+    </script>
+    </head>
+    <body>
+        <button  onclick="player.prev()" >prev</button>
+        <button  onclick=" player.statu()" >status</button>
+        <button  onclick="player.next()" >next</button>
+	<button  onclick="player.stop()" >stop</button>
+    </body>
+</html>
